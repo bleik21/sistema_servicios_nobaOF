@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>NOBA | Registro de Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/registro.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .form-group { margin-bottom: 15px; }
+        .form-group input { 
+            width: 100%; padding: 12px; 
+            border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); 
+            background: rgba(0,0,0,0.1); color: white; box-sizing: border-box; 
+        }
+        .btn-noba {
+            width: 100%; padding: 15px; 
+            background: #4A90E2; color: white; 
+            border: none; border-radius: 10px; 
+            cursor: pointer; font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h2 style="color: #4A90E2; text-align: center; margin-bottom: 25px;">CREAR CUENTA</h2>
+        
+        <form action="/ejecutar_registro" method="POST">
+            <div class="form-group">
+                <input type="text" name="nombre" placeholder="Nombre Completo" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="usuario" placeholder="Nombre de Usuario" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Correo Electrónico" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Contraseña" required>
+            </div>
+
+            <button type="submit" class="btn-noba">REGISTRARSEHORA</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('login_manual_page') }}" style="color: #b0b0b0; text-decoration: none; font-size: 0.9rem;">¿Ya tienes cuenta? Inicia sesión</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

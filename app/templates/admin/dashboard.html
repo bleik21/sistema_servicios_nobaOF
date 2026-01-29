@@ -1,0 +1,82 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Resumen General</h2>
+    <span class="badge bg-white text-dark shadow-sm p-2 px-3 rounded-pill">Ene 2026</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Usuarios Totales</h6>
+                    <h3 class="fw-bold">{{ "{:,}".format(usuarios_count) }}</h3>
+                </div>
+                <i class="fa-solid fa-users-gear text-primary fs-3"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card admin-card p-4">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h6 class="text-muted small text-uppercase">Trabajadores Activos</h6>
+                    <h3 class="fw-bold">{{ trabajadores_count }}</h3>
+                </div>
+                <i class="fa-solid fa-user-check text-success fs-3"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="mt-5 card admin-card p-4">
+    <h5 class="fw-bold mb-4">Últimos Trabajadores Registrados</h5>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Profesional</th>
+                    <th>Especialidad</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trab in ultimos_trabajadores %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                <i class="fa-solid fa-user text-muted small"></i>
+                            </div>
+                            {{ trab.nombre_completo }}
+                        </div>
+                    </td>
+                    <td><span class="badge bg-info-subtle text-info">ID: {{ trab.subcategoria_id }}</span></td>
+                    <td>{{ trab.ubicacion }}</td>
+                    <td>
+                        {% if trab.estado == 'activo' %}
+                            <span class="badge bg-success-subtle text-success">Verificado</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger">{{ trab.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin_trabajadores') }}" class="btn btn-sm btn-light border">Ver Todo</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No hay trabajadores registrados recientemente.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

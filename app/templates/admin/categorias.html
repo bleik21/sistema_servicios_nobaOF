@@ -1,0 +1,105 @@
+{% extends "admin/base_admin.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Estructura de Servicios</h2>
+            <p class="text-muted">Gestiona las categorías principales y sus especialidades derivadas.</p>
+        </div>
+        <div class="btn-group shadow-sm rounded-pill overflow-hidden">
+            <button class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#modalNuevaCategoria">
+                <i class="fa-solid fa-plus me-2"></i> Nueva Categoría
+            </button>
+            <button class="btn btn-dark px-4" data-bs-toggle="modal" data-bs-target="#modalNuevaSub">
+                <i class="fa-solid fa-folder-plus me-2"></i> Nueva Subcategoría
+            </button>
+        </div>
+    </div>
+
+    <ul class="nav nav-pills mb-4" id="adminTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#tab-categorias">
+                Categorías Principales
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link rounded-pill px-4" data-bs-toggle="pill" data-bs-target="#tab-subcategorias">
+                Subcategorías / Especialidades
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="tab-categorias">
+            <div class="card admin-card border-0 shadow-sm overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 table-hover">
+                        <thead class="bg-light text-muted small fw-bold">
+                            <tr>
+                                <th class="ps-4 py-3">ID</th>
+                                <th>Icono</th>
+                                <th>Nombre de Categoría</th>
+                                <th>Descripción</th>
+                                <th class="text-end pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in categorias %}
+                            <tr>
+                                <td class="ps-4 text-muted">#{{ cat.id }}</td>
+                                <td>
+                                    <div class="bg-light text-primary rounded p-2 d-inline-block shadow-sm" style="width: 40px; text-align: center;">
+                                        <i class="fa-solid fa-layer-group"></i> 
+                                    </div>
+                                </td>
+                                <td class="fw-bold">{{ cat.nombre }}</td>
+                                <td class="text-muted small">{{ cat.descripcion if cat.descripcion else 'Sin descripción' }}</td>
+                                <td class="text-end pe-4">
+                                    <button class="btn btn-sm btn-outline-primary rounded-circle"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-circle ms-1"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="tab-subcategorias">
+            <div class="card admin-card border-0 shadow-sm p-4 text-center">
+                <i class="fa-solid fa-terminal fa-3x mb-3 opacity-25"></i>
+                <h5>Gestión de Especialidades</h5>
+                <p class="text-muted">Aquí podrás asignar subcategorías a las categorías existentes.</p>
+                </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevaCategoria" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="fw-bold">Agregar Categoría Principal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="#" method="POST">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nombre</label>
+                        <input type="text" name="nombre" class="form-control rounded-3" placeholder="Ej: Salud, Tecnología..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Descripción</label>
+                        <textarea name="descripcion" class="form-control rounded-3" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Crear Categoría</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

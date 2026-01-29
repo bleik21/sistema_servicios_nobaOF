@@ -1,0 +1,124 @@
+/* --- PALETA DE COLORES DARK TECH --- */
+:root {
+    --fondo-profundo: #0D1117;   /* Fondo Profundo */
+    --azul-midnight: #161822;    /* Azul Midnight */
+    --azul-electrico: #4A90E2;   /* Azul Eléctrico */
+    --gris-texto: #8894E6;       /* Gris de Texto */
+    --blanco-snow: #F096FC;      /* Blanco Snow */
+}
+
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    height: 100vh; display: flex; justify-content: center; align-items: center;
+    background-color: var(--fondo-profundo); overflow: hidden;
+}
+
+#bg-video {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    object-fit: cover; z-index: -1; filter: brightness(0.2);
+}
+
+/* BOTÓN REGRESAR */
+.btn-back {
+    position: absolute; top: 25px; left: 25px;
+    background: rgba(22, 24, 34, 0.8);
+    border: 1px solid var(--azul-electrico);
+    color: var(--azul-electrico); padding: 12px 20px; border-radius: 12px;
+    text-decoration: none; font-size: 0.8rem; font-weight: bold;
+    backdrop-filter: blur(10px); transition: 0.3s;
+    z-index: 10;
+}
+.btn-back:hover {
+    background: var(--azul-electrico); color: var(--fondo-profundo);
+    box-shadow: 0 0 20px var(--azul-electrico);
+}
+
+/* VENTANA DE REGISTRO */
+.glass-card {
+    background: rgba(22, 24, 34, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(74, 144, 226, 0.2);
+    padding: 30px; border-radius: 30px;
+    width: 100%; max-width: 440px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+    text-align: center; color: white;
+}
+
+.custom-logo { width: 55px; margin-bottom: 5px; filter: brightness(1.2); }
+
+.title-tech {
+    font-size: 1.6rem; font-weight: 800; color: var(--azul-electrico);
+    letter-spacing: 3px; margin-bottom: 20px; text-transform: uppercase;
+}
+
+/* FORMULARIO */
+.form-group { margin-bottom: 12px; text-align: left; }
+
+.form-group input {
+    width: 100%; padding: 12px 16px; border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(136, 148, 230, 0.3); /* Usando gris-texto con transparencia */
+    color: white; outline: none; transition: 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--azul-electrico);
+    background: rgba(74, 144, 226, 0.05);
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.2);
+}
+
+/* --- SECCIÓN DE CÁMARA (NUEVO) --- */
+.camera-container {
+    width: 100%; height: 160px;
+    background: #000; border-radius: 15px;
+    margin: 15px 0; overflow: hidden;
+    position: relative; border: 1px solid var(--azul-electrico);
+}
+
+#webcam { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+
+.scan-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(22, 24, 34, 0.7); color: var(--azul-electrico); cursor: pointer;
+    transition: 0.3s;
+}
+
+.status-ok {
+    color: #2ecc71; font-size: 0.75rem; margin-top: 5px; font-weight: bold;
+}
+
+/* CHECKBOX */
+.checkbox-group {
+    display: flex; align-items: center; gap: 10px;
+    margin: 15px 0; font-size: 0.7rem; color: var(--gris-texto);
+    cursor: pointer; text-align: left;
+}
+
+/* BOTÓN REGISTRARSE */
+.btn-noba {
+    width: 100%; padding: 15px; background: var(--azul-electrico);
+    color: white; border: none; border-radius: 12px;
+    font-weight: 900; font-size: 0.9rem; cursor: pointer; transition: 0.4s;
+}
+
+.btn-noba:hover {
+    background: var(--blanco-snow); color: var(--fondo-profundo);
+    transform: translateY(-2px); box-shadow: 0 10px 20px rgba(240, 150, 252, 0.3);
+}
+
+/* SOCIAL LOGIN */
+.social-icons { display: flex; justify-content: center; gap: 12px; margin: 15px 0; }
+.social-icons a {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--gris-texto);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--azul-electrico); text-decoration: none; transition: 0.3s;
+}
+.social-icons a:hover {
+    background: var(--azul-electrico); color: white;
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ sub.nombre }} - NOBA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/servicios.css') }}">
+    <style>
+        .hero-box { background: #0a192f; color: white; padding: 60px 0; text-align: center; }
+        .worker-card {
+            background: #fff;
+            border-radius: 15px;
+            border-left: 5px solid #0d6efd;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            overflow: hidden;
+            height: 100%;
+        }
+        .worker-card:hover { transform: translateY(-5px); }
+        .worker-body { padding: 20px; }
+        .navbar-custom { background-color: #0a192f; }
+        /* Centrar logo NOBA como en servicios.html */
+        .navbar-middle {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm sticky-top">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <a class="nav-link text-white me-3" href="{{ url_for('home') }}">Inicio</a>
+            <a class="nav-link text-white me-3" href="{{ url_for('servicios') }}">Servicios</a>
+        </div>
+        <a class="navbar-brand navbar-middle text-white">NOBA</a>
+        <div class="ms-auto text-white">
+            {% if session['nombre'] %}
+                <span class="small me-3">👤 {{ session['nombre'] }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Salir</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<section class="hero-box">
+    <div class="container">
+        <h1 class="fw-bold">{{ sub.nombre }}</h1>
+        <p class="lead">Categoría: <span class="badge bg-primary text-uppercase">{{ sub.categoria_nombre }}</span></p>
+        <a href="{{ url_for('subcategoria', id_cat=sub.categoria_id) }}" class="btn btn-outline-light btn-sm rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Volver a Especialidades
+        </a>
+    </div>
+</section>
+
+<div class="container mt-5 mb-5">
+    {% if not trabajadores %}
+        <div class="alert alert-info text-center shadow-sm rounded-4 py-5">
+            <i class="fa-solid fa-user-slash fa-3x mb-3 text-secondary"></i>
+            <h4 class="fw-bold">Próximamente</h4>
+            <p class="mb-0">Aún no hay profesionales registrados en esta especialidad.</p>
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for t in trabajadores %}
+            <div class="col-md-4">
+                <div class="worker-card">
+                    <div class="text-center p-4 bg-light">
+                        <i class="fa-solid fa-circle-user fa-5x text-secondary"></i>
+                    </div>
+                    
+                    <div class="worker-body">
+                        <h5 class="fw-bold mb-1">{{ t.nombre_completo }}</h5>
+                        <p class="text-muted small mb-2">
+                            <i class="fa-solid fa-id-card text-primary me-1"></i> CI: {{ t.ci }}
+                        </p>
+                        <p class="mb-3 text-secondary" style="font-size: 0.95rem; min-height: 50px;">
+                            {{ t.descripcion }}
+                        </p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted small">
+                                <i class="fa-solid fa-location-dot text-danger me-1"></i> {{ t.ubicacion }}
+                            </span>
+                            <span class="badge {{ 'bg-success' if t.estado == 'activo' else 'bg-warning text-dark' }} rounded-pill px-3">
+                                {{ t.estado | capitalize }}
+                            </span>
+                        </div>
+                        <hr>
+                        <div class="d-grid">
+                            <button class="btn btn-primary rounded-pill fw-bold">Solicitar Servicio</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+sistema_servicios/
+│
+├── app.py                 # Arranque del servidor Flask
+├── .env                   # Variables de entorno (MySQL)
+├── requirements.txt       # Librerías del proyecto
+│
+├── app/
+│   ├── __init__.py        # Crea la app Flask
+│   │
+│   ├── routes/            # ENDPOINTS (URLs)
+│   │   ├── __init__.py
+│   │   ├── auth_routes.py
+│   │   ├── users_routes.py
+│   │   ├── roles_routes.py
+│   │   ├── categories_routes.py
+│   │   ├── subcategories_routes.py
+│   │   ├── services_routes.py
+│   │   ├── workers_routes.py
+│   │   ├── requests_routes.py
+│   │   └── worker_requests_routes.py
+│   │
+│   ├── services/          # LÓGICA + SQL
+│   │   ├── __init__.py
+│   │   ├── database.py    # Conexión MySQL
+│   │   ├── auth_service.py
+│   │   ├── users_service.py
+│   │   ├── roles_service.py
+│   │   ├── categories_service.py
+│   │   ├── subcategories_service.py
+│   │   ├── services_service.py
+│   │   ├── workers_service.py
+│   │   ├── requests_service.py
+│   │   └── worker_requests_service.py
+│   │
+│   ├── utils/             # FUNCIONES AUXILIARES
+│   │   ├── __init__.py
+│   │   ├── jwt_utils.py
+│   │   └── password_utils.py
+│   │
+│   └── docs/              # SWAGGER
+│       └── swagger.py
+│
+└── venv/                  # Entorno virtual (NO SE TOCA)

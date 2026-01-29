@@ -1,0 +1,84 @@
+body {
+    background-color: #f4f6f9;
+    padding-top: 85px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.navbar-custom {
+    background-color: #0a1a2a;
+    height: 85px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.navbar-custom .nav-link,
+.navbar-custom .navbar-brand {
+    color: white !important;
+    font-size: 18px;
+}
+
+.navbar-middle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+}
+
+/* HERO */
+.hero-servicios {
+    background: linear-gradient(to right, #0a1a2acc, #0a1a2a),
+                url('https://images.pexels.com/photos/3183197/pexels-photo-3183197.jpeg');
+    background-size: cover;
+    background-position: center;
+    padding: 70px 20px;
+    text-align: center;
+    color: white;
+    margin-bottom: 30px;
+}
+
+/* BOTÓN ASOCIARSE */
+.asociarse-box {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+    margin-bottom: 40px;
+}
+
+.btn-asociarse {
+    background: #0a1a2a;
+    color: white;
+    padding: 14px 26px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    transition: .3s;
+}
+
+/* TARJETAS */
+.cat-card {
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: .3s ease;
+    border-left: 6px solid #1d4ed8;
+}
+
+.cat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 26px rgba(0,0,0,0.15);
+}
+
+.cat-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    color: #1d4ed8;
+}

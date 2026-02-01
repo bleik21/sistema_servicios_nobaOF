@@ -1,13 +1,13 @@
 import os
+import uuid
 import bcrypt
-import math
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from functools import wraps
 
 # ======================
-# CARGA VARIABLES ENTORNO
+# CARGAR VARIABLES ENTORNO
 # ======================
 load_dotenv()
 
@@ -26,7 +26,6 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave_secreta_noba_2026')
 # ======================
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ======================
@@ -51,39 +50,6 @@ def admin_required(f):
     return decorated
 
 # ======================
-# UTILIDADES
-# ======================
-def calcular_distancia_facial(rostro_actual, rostro_db):
-    if not rostro_actual or not rostro_db:
-        return float('inf')
-
-    total = 0
-    count = 0
-
-    for i in range(len(rostro_actual)):
-        try:
-            p1 = rostro_actual[i]
-            p2 = rostro_db[i]
-            dist = math.sqrt((p1['x'] - p2['x'])**2 + (p1['y'] - p2['y'])**2)
-            total += dist
-            count += 1
-        except:
-            continue
-
-    return total / count if count > 0 else float('inf')
-
-
-def obtener_icono_categoria(nombre):
-    iconos = {
-        "derecho": "fa-solid fa-gavel",
-        "tecnología": "fa-solid fa-computer",
-        "salud": "fa-solid fa-stethoscope",
-        "higiene": "fa-solid fa-broom",
-        "hogar": "fa-solid fa-house"
-    }
-    return iconos.get(nombre.lower(), "fa-solid fa-layer-group")
-
-# ======================
 # RUTAS PÚBLICAS
 # ======================
 @app.route('/')
@@ -100,92 +66,59 @@ def login_manual_page():
 def registro_page():
     return render_template('login/registro.html')
 
+
 # ======================
-# 🔥 RUTA TEST SUPABASE
+# TEST SUPABASE
 # ======================
 @app.route('/test_supabase')
 def test_supabase():
+    res = supabase.table('categorias').select('*').execute()
+    return jsonify(res.data)
+
+
+# ======================
+# REGISTRO DE USUARIO ✅
+# ======================
+@app.route('/ejecutar_registro', methods=['POST'])
+def ejecutar_registro():
+    nombre = request.form.get('nombre')
+    usuario = request.form.get('usuario')
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    if not all([nombre, usuario, email, password]):
+        flash("Todos los campos son obligatorios", "danger")
+        return redirect(url_for('registro_page'))
+
+    password_hash = bcrypt.hashpw(
+        password.encode('utf-8'),
+        bcrypt.gensalt()
+    ).decode('utf-8')
+
     try:
-        res = supabase.table('categorias').select('*').execute()
-        return jsonify({
-            "status": "ok",
-            "total": len(res.data),
-            "data": res.data
-        })
+        nuevo_usuario = {
+            "id": str(uuid.uuid4()),  # 🔥 CLAVE DEL PROBLEMA
+            "nombre": nombre,
+            "usuario": usuario,
+            "email": email,
+            "password": password_hash,
+            "rol": 3,
+            "estado": "activo"
+        }
+
+        supabase.table('usuarios').insert(nuevo_usuario).execute()
+
+        flash("Registro exitoso. Ya puedes iniciar sesión.", "success")
+        return redirect(url_for('login_manual_page'))
+
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+        print("❌ Error registro:", e)
+        flash("El usuario o correo ya existe", "danger")
+        return redirect(url_for('registro_page'))
+
 
 # ======================
-# USUARIO
-# ======================
-@app.route('/servicios')
-@login_required
-def servicios():
-    res = supabase.table('categorias').select("*").order('nombre').execute()
-    return render_template('vista_usuario/servicios.html', categorias=res.data)
-
-
-@app.route('/subcategoria/<int:id_cat>')
-@login_required
-def subcategoria(id_cat):
-    cat = supabase.table('categorias').select("*").eq('id', id_cat).execute()
-    sub = supabase.table('subcategorias').select("*").eq('categoria_id', id_cat).execute()
-
-    if not cat.data:
-        return redirect(url_for('servicios'))
-
-    return render_template(
-        'vista_usuario/subcategoria.html',
-        categoria=cat.data[0],
-        subcategorias=sub.data
-    )
-
-
-@app.route('/trabajadores/<int:id_sub>')
-@login_required
-def trabajadores(id_sub):
-    sub = supabase.table('subcategorias').select("*").eq('id', id_sub).execute()
-    if not sub.data:
-        return redirect(url_for('servicios'))
-
-    categoria = supabase.table('categorias').select("nombre").eq(
-        'id', sub.data[0]['categoria_id']
-    ).execute()
-
-    trabajadores = supabase.table('trabajadores').select("*").eq(
-        'subcategoria_id', id_sub
-    ).execute()
-
-    return render_template(
-        'vista_usuario/trabajadores.html',
-        sub={
-            "id": sub.data[0]['id'],
-            "nombre": sub.data[0]['nombre'],
-            "categoria_nombre": categoria.data[0]['nombre']
-        },
-        trabajadores=trabajadores.data
-    )
-
-# ======================
-# ADMIN
-# ======================
-@app.route('/admin/dashboard')
-@admin_required
-def admin_dashboard():
-    usuarios = supabase.table('usuarios').select('id', count='exact').execute()
-    trabajadores = supabase.table('trabajadores').select('id', count='exact').execute()
-
-    return render_template(
-        'admin/dashboard.html',
-        usuarios_count=usuarios.count or 0,
-        trabajadores_count=trabajadores.count or 0
-    )
-
-# ======================
-# LOGIN / LOGOUT
+# LOGIN
 # ======================
 @app.route('/ejecutar_login', methods=['POST'])
 def ejecutar_login():
@@ -202,13 +135,7 @@ def ejecutar_login():
 
     user = res.data[0]
 
-    valido = (
-        bcrypt.checkpw(password.encode(), user['password'].encode())
-        if user['password'].startswith('$2b$')
-        else password == user['password']
-    )
-
-    if not valido:
+    if not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
         flash("Credenciales incorrectas", "danger")
         return redirect(url_for('login_manual_page'))
 
@@ -221,15 +148,44 @@ def ejecutar_login():
     return redirect(url_for('admin_dashboard' if user['rol'] == 2 else 'servicios'))
 
 
+# ======================
+# USUARIO
+# ======================
+@app.route('/servicios')
+@login_required
+def servicios():
+    res = supabase.table('categorias').select("*").order('nombre').execute()
+    return render_template('vista_usuario/servicios.html', categorias=res.data)
+
+
+# ======================
+# ADMIN
+# ======================
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    usuarios = supabase.table('usuarios').select('id', count='exact').execute()
+    trabajadores = supabase.table('trabajadores').select('id', count='exact').execute()
+
+    return render_template(
+        'admin/dashboard.html',
+        usuarios_count=usuarios.count or 0,
+        trabajadores_count=trabajadores.count or 0
+    )
+
+
+# ======================
+# LOGOUT
+# ======================
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('home'))
 
+
 # ======================
 # MAIN
 # ======================
 if __name__ == '__main__':
-    port = 5000
-    print(f"✅ Servidor corriendo en http://localhost:{port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    print("✅ Servidor corriendo en http://localhost:5000")
+    app.run(host='0.0.0.0', port=5000, debug=True)

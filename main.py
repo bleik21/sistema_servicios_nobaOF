@@ -12,6 +12,13 @@ from functools import wraps
 load_dotenv()
 
 # ======================
+# DEBUG VARIABLES (CLAVE PARA RENDER)
+# ======================
+print("🔎 SUPABASE_URL =", repr(os.getenv("SUPABASE_URL")))
+print("🔎 SUPABASE_KEY =", "CARGADA" if os.getenv("SUPABASE_KEY") else "NO CARGADA")
+print("🔎 FLASK_SECRET_KEY =", "CARGADA" if os.getenv("FLASK_SECRET_KEY") else "NO CARGADA")
+
+# ======================
 # CONFIGURACIÓN RUTAS
 # ======================
 base_dir = os.path.abspath(os.path.dirname(__file__))
@@ -22,10 +29,14 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave_secreta_noba_2026')
 
 # ======================
-# SUPABASE
+# SUPABASE (VALIDACIÓN DURA)
 # ======================
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise RuntimeError("❌ SUPABASE_URL o SUPABASE_KEY no están definidas")
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # ======================
@@ -66,38 +77,46 @@ def login_manual_page():
 def registro_page():
     return render_template('login/registro.html')
 
-
 # ======================
 # TEST SUPABASE
 # ======================
 @app.route('/test_supabase')
 def test_supabase():
-    res = supabase.table('categorias').select('*').execute()
-    return jsonify(res.data)
-
+    try:
+        res = supabase.table('categorias').select('*').execute()
+        return jsonify({
+            "status": "ok",
+            "total": len(res.data),
+            "data": res.data
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 # ======================
-# REGISTRO DE USUARIO ✅
+# REGISTRO DE USUARIO
 # ======================
 @app.route('/ejecutar_registro', methods=['POST'])
 def ejecutar_registro():
-    nombre = request.form.get('nombre')
-    usuario = request.form.get('usuario')
-    email = request.form.get('email')
-    password = request.form.get('password')
-
-    if not all([nombre, usuario, email, password]):
-        flash("Todos los campos son obligatorios", "danger")
-        return redirect(url_for('registro_page'))
-
-    password_hash = bcrypt.hashpw(
-        password.encode('utf-8'),
-        bcrypt.gensalt()
-    ).decode('utf-8')
-
     try:
+        nombre = request.form.get('nombre')
+        usuario = request.form.get('usuario')
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        if not all([nombre, usuario, email, password]):
+            flash("Todos los campos son obligatorios", "danger")
+            return redirect(url_for('registro_page'))
+
+        password_hash = bcrypt.hashpw(
+            password.encode('utf-8'),
+            bcrypt.gensalt()
+        ).decode('utf-8')
+
         nuevo_usuario = {
-            "id": str(uuid.uuid4()),  # 🔥 CLAVE DEL PROBLEMA
+            "id": str(uuid.uuid4()),   # UUID correcto
             "nombre": nombre,
             "usuario": usuario,
             "email": email,
@@ -112,10 +131,9 @@ def ejecutar_registro():
         return redirect(url_for('login_manual_page'))
 
     except Exception as e:
-        print("❌ Error registro:", e)
-        flash("El usuario o correo ya existe", "danger")
+        print("❌ Error registro:", repr(e))
+        flash("Error al registrar usuario", "danger")
         return redirect(url_for('registro_page'))
-
 
 # ======================
 # LOGIN
@@ -147,7 +165,6 @@ def ejecutar_login():
 
     return redirect(url_for('admin_dashboard' if user['rol'] == 2 else 'servicios'))
 
-
 # ======================
 # USUARIO
 # ======================
@@ -156,7 +173,6 @@ def ejecutar_login():
 def servicios():
     res = supabase.table('categorias').select("*").order('nombre').execute()
     return render_template('vista_usuario/servicios.html', categorias=res.data)
-
 
 # ======================
 # ADMIN
@@ -173,7 +189,6 @@ def admin_dashboard():
         trabajadores_count=trabajadores.count or 0
     )
 
-
 # ======================
 # LOGOUT
 # ======================
@@ -181,7 +196,6 @@ def admin_dashboard():
 def logout():
     session.clear()
     return redirect(url_for('home'))
-
 
 # ======================
 # MAIN

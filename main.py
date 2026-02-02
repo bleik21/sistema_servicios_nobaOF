@@ -6,27 +6,17 @@ from supabase import create_client, Client
 from dotenv import load_dotenv
 from functools import wraps
 
-# ======================
-# CARGAR VARIABLES ENTORNO
-# ======================
 load_dotenv()
 
 # ======================
-# DEBUG VARIABLES (CLAVE PARA RENDER)
-# ======================
-print("🔎 SUPABASE_URL =", repr(os.getenv("SUPABASE_URL")))
-print("🔎 SUPABASE_KEY =", "CARGADA" if os.getenv("SUPABASE_KEY") else "NO CARGADA")
-print("🔎 FLASK_SECRET_KEY =", "CARGADA" if os.getenv("FLASK_SECRET_KEY") else "NO CARGADA")
-
-# ======================
-# CONFIGURACIÓN RUTAS
+# CONFIGURACIÓN
 # ======================
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, 'app', 'templates')
 static_dir = os.path.join(base_dir, 'app', 'static')
 
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave_secreta_noba_2026')
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 
 # ======================
 # SUPABASE
@@ -35,7 +25,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise RuntimeError("❌ SUPABASE_URL o SUPABASE_KEY no están definidas")
+    raise RuntimeError("❌ SUPABASE_URL o SUPABASE_KEY no definidas")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -55,7 +45,6 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session or session.get('rol') != 2:
-            flash("Acceso denegado", "danger")
             return redirect(url_for('login_manual_page'))
         return f(*args, **kwargs)
     return decorated
@@ -78,61 +67,41 @@ def registro_page():
     return render_template('login/registro.html')
 
 # ======================
-# PANEL USUARIO (NUEVO)
+# PANEL USUARIO
 # ======================
-@app.route('servicios')
+@app.route('/servicios')
 @login_required
 def panel_usuario():
     return render_template('vista_usuario/servicios.html')
-
-# ======================
-# TEST SUPABASE
-# ======================
-@app.route('/test_supabase')
-def test_supabase():
-    try:
-        res = supabase.table('categorias').select('*').execute()
-        return jsonify(res.data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 # ======================
 # REGISTRO
 # ======================
 @app.route('/ejecutar_registro', methods=['POST'])
 def ejecutar_registro():
-    try:
-        nombre = request.form.get('nombre')
-        usuario = request.form.get('usuario')
-        email = request.form.get('email')
-        password = request.form.get('password')
+    nombre = request.form.get('nombre')
+    usuario = request.form.get('usuario')
+    email = request.form.get('email')
+    password = request.form.get('password')
 
-        if not all([nombre, usuario, email, password]):
-            flash("Todos los campos son obligatorios", "danger")
-            return redirect(url_for('registro_page'))
-
-        password_hash = bcrypt.hashpw(
-            password.encode('utf-8'),
-            bcrypt.gensalt()
-        ).decode('utf-8')
-
-        supabase.table('usuarios').insert({
-            "id": str(uuid.uuid4()),
-            "nombre": nombre,
-            "usuario": usuario,
-            "email": email,
-            "password": password_hash,
-            "rol": 3,
-            "estado": "activo"
-        }).execute()
-
-        flash("Registro exitoso. Ya puedes iniciar sesión.", "success")
-        return redirect(url_for('login_manual_page'))
-
-    except Exception as e:
-        print("❌ Error registro:", repr(e))
-        flash("Error al registrar usuario", "danger")
+    if not all([nombre, usuario, email, password]):
+        flash("Todos los campos son obligatorios", "danger")
         return redirect(url_for('registro_page'))
+
+    password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    supabase.table('usuarios').insert({
+        "id": str(uuid.uuid4()),
+        "nombre": nombre,
+        "usuario": usuario,
+        "email": email,
+        "password": password_hash,
+        "rol": 3,
+        "estado": "activo"
+    }).execute()
+
+    flash("Registro exitoso", "success")
+    return redirect(url_for('login_manual_page'))
 
 # ======================
 # LOGIN
@@ -152,20 +121,14 @@ def ejecutar_login():
 
     user = res.data[0]
 
-    if not bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')):
+    if not bcrypt.checkpw(password.encode(), user['password'].encode()):
         flash("Credenciales incorrectas", "danger")
         return redirect(url_for('login_manual_page'))
 
-    session.update({
-        "user_id": user['id'],
-        "nombre": user['nombre'],
-        "rol": user['rol']
-    })
+    session['user_id'] = user['id']
+    session['rol'] = user['rol']
 
-    if user['rol'] == 2:
-        return redirect(url_for('admin_dashboard'))
-    else:
-        return redirect(url_for('panel_usuario'))
+    return redirect(url_for('admin_dashboard' if user['rol'] == 2 else 'panel_usuario'))
 
 # ======================
 # ADMIN
@@ -173,14 +136,7 @@ def ejecutar_login():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    usuarios = supabase.table('usuarios').select('id', count='exact').execute()
-    trabajadores = supabase.table('trabajadores').select('id', count='exact').execute()
-
-    return render_template(
-        'admin/dashboard.html',
-        usuarios_count=usuarios.count or 0,
-        trabajadores_count=trabajadores.count or 0
-    )
+    return render_template('admin/dashboard.html')
 
 # ======================
 # LOGOUT
@@ -189,10 +145,3 @@ def admin_dashboard():
 def logout():
     session.clear()
     return redirect(url_for('home'))
-
-# ======================
-# MAIN
-# ======================
-if __name__ == '__main__':
-    print("✅ Servidor corriendo en http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)

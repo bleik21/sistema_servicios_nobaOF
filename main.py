@@ -29,7 +29,7 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'clave_secreta_noba_2026')
 
 # ======================
-# SUPABASE (VALIDACIÓN DURA)
+# SUPABASE
 # ======================
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -78,25 +78,26 @@ def registro_page():
     return render_template('login/registro.html')
 
 # ======================
+# PANEL USUARIO (NUEVO)
+# ======================
+@app.route('/panel')
+@login_required
+def panel_usuario():
+    return render_template('vista_usuario/servicios.html')
+
+# ======================
 # TEST SUPABASE
 # ======================
 @app.route('/test_supabase')
 def test_supabase():
     try:
         res = supabase.table('categorias').select('*').execute()
-        return jsonify({
-            "status": "ok",
-            "total": len(res.data),
-            "data": res.data
-        })
+        return jsonify(res.data)
     except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
 # ======================
-# REGISTRO DE USUARIO
+# REGISTRO
 # ======================
 @app.route('/ejecutar_registro', methods=['POST'])
 def ejecutar_registro():
@@ -115,17 +116,15 @@ def ejecutar_registro():
             bcrypt.gensalt()
         ).decode('utf-8')
 
-        nuevo_usuario = {
-            "id": str(uuid.uuid4()),   # UUID correcto
+        supabase.table('usuarios').insert({
+            "id": str(uuid.uuid4()),
             "nombre": nombre,
             "usuario": usuario,
             "email": email,
             "password": password_hash,
             "rol": 3,
             "estado": "activo"
-        }
-
-        supabase.table('usuarios').insert(nuevo_usuario).execute()
+        }).execute()
 
         flash("Registro exitoso. Ya puedes iniciar sesión.", "success")
         return redirect(url_for('login_manual_page'))
@@ -163,16 +162,10 @@ def ejecutar_login():
         "rol": user['rol']
     })
 
-    return redirect(url_for('admin_dashboard' if user['rol'] == 2 else 'servicios'))
-
-# ======================
-# USUARIO
-# ======================
-@app.route('/servicios')
-@login_required
-def servicios():
-    res = supabase.table('categorias').select("*").order('nombre').execute()
-    return render_template('vista_usuario/servicios.html', categorias=res.data)
+    if user['rol'] == 2:
+        return redirect(url_for('admin_dashboard'))
+    else:
+        return redirect(url_for('panel_usuario'))
 
 # ======================
 # ADMIN

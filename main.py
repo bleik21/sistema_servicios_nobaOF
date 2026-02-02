@@ -80,7 +80,7 @@ def registro_page():
 # ======================
 # PANEL USUARIO (NUEVO)
 # ======================
-@app.route('/panel')
+@app.route('servicios')
 @login_required
 def panel_usuario():
     return render_template('vista_usuario/servicios.html')
